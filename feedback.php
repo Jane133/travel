@@ -24,8 +24,10 @@
    </head>
    <body>
     <?php
+    
      include "connect.php";
-     $query = mysqli_query($connect,"SELECT * FROM feedback");  
+     $id = $_SESSION['id'];
+     $query = mysqli_query($connect,"SELECT * FROM feedback WHERE sender_id = '$id'");  
      $rows = mysqli_num_rows($query);
     ?>
       <nav class="navbar navbar-default navbar-fixed-top">
@@ -36,24 +38,15 @@
                <span class="icon-bar"></span>
                <span class="icon-bar"></span>
                </button>
-               <a class="navbar-brand" href="homepage.html"><span class="glyphicon glyphicon-home"></span> ADMINISTRATOR </a>				
+               <a class="navbar-brand" href="#"><span class="glyphicon glyphicon-home"></span>Welcome, <?php echo $name?>  </a>				
             </div>
             <div class="collapse navbar-collapse" id="myNavbar">
                <ul class="nav navbar-nav navbar-right">
                   <li>
-                     <a  href="clients.php" > Clients</a>
-                  </li>                 
-                  <li>
-                     <a href="buses.php"> Buses</a>
+                     <a href="bookings.php" class="active"> Bookings</a>
                   </li>
                   <li>
-                     <a href="routes.php"> Routes</a>
-                  </li>
-                  <li>
-                     <a href="bookings.php" > Bookings</a>
-                  </li>
-                  <li>
-                     <a href="feedback.php" class="active"> Feedback</a>
+                     <a href="feedback.php"> Feedback</a>
                   </li>
                </ul>
             </div>
@@ -61,19 +54,16 @@
       </nav>
       <br><br><br><br>
       <div class="container mt-3" > 
+      <span class="float-right"><button class="btn btn-success" onclick="payModal()">New Feedback</button></span>
+      
         
-      <h3>Feedback Received <?php echo $rows;?></h3>
-        <br><hr>
 		<table class="table table-striped">
 			<thead>
 				<tr>				
-				<th scope="col">ID</th>
-				<th scope="col">Sender Name</th>				
-                <th scope="col">Email</th>
-                <th scope="col">Phone</th>
-                <th scope="col">Message</th>                
-                <th scope="col">Date</th>
-                <th>Control</th>
+				<th scope="col">ID</th>        
+            <th scope="col">Message</th>                
+            <th scope="col">Date</th>
+            
 				</tr>
 			</thead>
 			<tbody>
@@ -83,12 +73,8 @@
                   echo "
                   <tr>                  
                   <td>$rs[0]</td>
-                  <td>$rs[1]</td>
-                  <td>$rs[2]</td>
-                  <td>$rs[3]</td>
-                  <td>$rs[4]</td>  
-                  <td>$rs[5]</td>                 
-                  <td><button class=\" form-control btn-danger\" onclick=\"delete_bus(".$rs[0].")\">Delete</button></td>
+                  <td>$rs[4]</td>
+                  <td>$rs[5]</td>                              
                   </tr>
                   ";
                }
@@ -104,30 +90,53 @@
          </a>
          <!-- <p>Vaccine Distribution</p> -->
       </footer>
+      <div class="modal" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+         <div class="modal-dialog">
+            <div class="modal-content">
+               <div class="modal-header">
+                     <h5 class="modal-title">Create New Booking!!!</h5>
+                     <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeModal()">
+                     <span aria-hidden="true">&times;</span>
+                     </button>
+               </div>
+               <div class="modal-body">
+                  <div class="form-group">               
+                     <label class="control-label">Enter Your  Phone </label>                        
+                     <input type="text" class="form-control" id="phone">                   
+                  </div>
+                  <div class="form-group">               
+                     <label class="control-label">Enter Your  Email </label>                        
+                     <input type="text" class="form-control" id="email">                   
+                  </div>
+                  <div class="form-group">               
+                        <label class="control-label">Enter Your feedback  </label>                        
+                        <textarea  cols="30" rows="5" id="msg" class="form-control">
+
+                        </textarea>                            
+                  </div>
+                  <button class="btn btn-success" onclick="sendMsg()" >SEND!!</button>                               
+               </div>
+            </div>
+         </div>
+      </div>
    </body>
-   <script src="bootrsap/jquery.js"></script>
+   <script src="bootstrap/jquery.js"></script>
    <script>
-       function save(){          
-			var name = $("#name").val();
-            var email = $("#email").val();
-            var cat_id = $("#category").val();
-            var cat_name = $("#category option:selected").text();
-            if(cat_id <1){
-                alert("Select Category");
-                return
-            }
-			
-			if(email.length<1 || name.length<1){
-				alert("Please Fill the fields");
-				return;
-			}            
-
-			var formdata = new FormData();
-			formdata.append('name',name);
-			formdata.append('email',email);
-			formdata.append('cat_id',cat_id);
-      formdata.append('cat_name',cat_name);
-      formdata.append('stage','account');
+       function payModal(id){
+         $('#exampleModal1').fadeIn();
+         // $('#bid').text(id);
+      }
+      
+      function sendMsg(){
+         var msg = $('#msg').val();
+         var phone = $('#phone').val();
+         var email = $('#email').val();
+         if(msg.length >3){           
+            var formdata = new FormData();
+			   formdata.append('stage',"send_msg");
+            formdata.append('msg',msg);
+            formdata.append('email',email);
+            formdata.append('phone',phone);
             $.ajax({
                 url: "crad.php",
                 dataType:"text",
@@ -136,52 +145,26 @@
                 cache: false,
                 contentType: false,
                 processData: false,
-                success: function(data) {                 
-                    // Success message
-                    console.log(data);
-                    $('#success').html("<div class='alert alert-success'>");
-                    $('#success > .alert-success').html("<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;")
-                        .append("</button>");
-                    $('#success > .alert-success')
-                        .append("<strong>Account Created Successfull!! </strong>");
-                    $('#success > .alert-success')
-                        .append('</div>');
-
-                    //clear all fields
-                    $('#contactForm').trigger("reset");
-                },
-                error: function() {
-                    // Fail message
-                    $('#success').html("<div class='alert alert-danger'>");
-                    $('#success > .alert-danger').html("<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;")
-                        .append("</button>");
-                    $('#success > .alert-danger').append("<strong>Sorry, it seems that my mail server is not responding...</strong> Could you please email me directly to <a href='mailto:me@example.com?Subject=Message_Me from myprogrammingblog.com'>me@example.com</a> ? Sorry for the inconvenience!");
-                    $('#success > .alert-danger').append('</div>');
-                    //clear all fields
-                    $('#contactForm').trigger("reset");
-                },
-            })
-         }
-
-         function delete_bus(id){
-            var formdata = new FormData();			
-			formdata.append('id',id);           
-            formdata.append('stage','feedback_delete');
-            $.ajax({
-                url: "crad.php",
-                dataType:"text",
-                type: "POST",
-                data: formdata,
-                cache: false,
-                contentType: false,
-                processData: false,
-                success: function(data) {                 
+                success: function(data) { 
+                    // Success message   
+                                     
                     alert(data);
                 },
                 error: function() {
-                   alert("Error Occured while remove record");
+                    // Fail message
+                    alert("Error Has occured");
+                   
                 },
-            })
+            });
+            
+         }else{
+            $('#alert_pay').fadeIn();
+            $('#alert_pay').text("Please enter the correct phone number");
+            $('#alert_pay').addClass("alert-danger");
          }
+         
+      }
+
+       
    </script>
 </html>

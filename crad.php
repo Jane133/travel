@@ -1,4 +1,5 @@
 <?php
+session_start();
 include 'connect.php';
     $stage = $_POST['stage'];  
 
@@ -15,32 +16,63 @@ include 'connect.php';
         }else{
             echo mysqli_error($connect);
         }
-    }elseif($stage=="bus_delete"){
-        $id = $_POST['id'];  
-        $query = mysqli_query($connect,"DELETE FROM buses WHERE id=$id");
+    }elseif($stage =="booking"){              
+        $company = $_POST['company']; 
+        $btype = $_POST['busType'];        
+        $confort = $_POST['confort']; 
+        $seat = $_POST['seat']; 
+        $phone = $_POST['phone'];  
+        $names = $_POST['names'];
+        $payment = $_POST['payment'];  
+        $child = $_POST['child']; 
+        $date = $_POST['datee']; 
+        $des = $_POST['des']; 
+        $dep = $_POST['dep'];       
+        $userId = $_SESSION['id'];
+
+        // echo $des." ".$dep;
+
+        $query = mysqli_query($connect,"INSERT INTO bookings(name,phone,departure,destination,cost,dob,confort,
+        company,bustype,payment,child,userId,status) 
+        VALUES('$names','$phone','$dep','$des','00','$date','$confort','$company','$btype','$payment','$child','$userId',0)");
         if($query){
-            echo "Deleted successfully";
+            echo "Client Added successfully";
         }else{
             echo mysqli_error($connect);
         }
-    }elseif($stage=="route"){
-        $start = $_POST['start'];
-        $end = $_POST['end'];
-        $cost = $_POST['cost']; 
-        $datee = date("jS  F Y");      
+
+    }elseif($stage=="update_booking"){        
+        $id = $_POST['id'];  
+        $facilities = array('2000', '3200', '1800','2200','1400');
+        $key = array_rand($facilities);
+        
+        $query = mysqli_query($connect,"UPDATE bookings SET status=1,cost=$facilities[$key]  WHERE id=$id") ;
+        if($query){
+            echo "Update successfully";
+        }else{
+            echo mysqli_error($connect);
+        }
+    }elseif($stage=="update_booking1"){
+        $id = $_POST['id'];  
+        
+        $query = mysqli_query($connect,"UPDATE bookings SET status=2  WHERE id=$id") ;
+        if($query){
+            echo "Update successfully";
+        }else{
+            echo mysqli_error($connect);
+        }
+    }elseif($stage=="send_msg"){
+        $msg = trim($_POST['msg']);      
+        $phone = trim($_POST['phone']);
+        $email = trim($_POST['email']);
+        $datee = date("jS  F Y");        
+        $name = $_SESSION['name'];  
+        $sender = $_SESSION['id'];         
     
-        $query = mysqli_query($connect,"INSERT INTO routes(start,end,price,dor) 
-        VALUES('$start','$end','$cost','$datee')");
+        $query = mysqli_query($connect,"INSERT INTO feedback(sender,email,phone,messages,dos,sender_id) 
+        VALUES('$name','$email','$phone','$msg','$datee','$sender')");
         if($query){
-            echo "Route Created successfully";
-        }else{
-            echo mysqli_error($connect);
-        }
-    }elseif($stage=="route_delete"){
-        $id = $_POST['id'];  
-        $query = mysqli_query($connect,"DELETE FROM routes WHERE id=$id");
-        if($query){
-            echo "Deleted successfully";
+            echo "Feedback send successfully";
         }else{
             echo mysqli_error($connect);
         }
@@ -76,22 +108,6 @@ include 'connect.php';
         }else{
             echo mysqli_error($connect);
         }
-    }elseif($stage=="login"){
-        $password = $_POST['password']; 
-        $hash_pass = md5($password);
-        
-        $email = $_POST['email'];        
-        $query = mysqli_query($connect, "SELECT * FROM admin where email='$email' AND password ='$hash_pass' LIMIT 1");
-        $row = mysqli_num_rows($query);
-        $rs = mysqli_fetch_row($query);        
-        
-        if($row==1){
-            $_SESSION['id']=$rs[0];
-            $_SESSION['name']=$rs[1];
-            echo 1;
-          }else{
-            echo 0;
-          }
     }
 
 
